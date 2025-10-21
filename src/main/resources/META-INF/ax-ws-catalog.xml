@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <!--
+      Este archivo mapea las ubicaciones de los esquemas (schemaLocation)
+      a archivos locales para que la generación de código no dependa de la red
+      o de rutas relativas complejas.
+    -->
+
+    <!-- Mapeo para el XSD de Consulta de RUC -->
+    <system systemId="consulta-ruc.wsdl.xsd1.xsd" uri="../xsd/consulta-ruc.wsdl.xsd1.xsd"/>
+
+</catalog>

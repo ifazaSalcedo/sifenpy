@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.5.5</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.py</groupId>
+	<artifactId>sifenpy</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>sifenpy</name>
+	<description>Demo project for Spring Boot</description>
+	<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>17</java.version>
+	</properties>
+	<dependencies>
+
+		<!-- Starter para Actuator: Proporciona endpoints de monitoreo y gestión (ej. /health, /metrics) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!-- Starter para servicios web de Spring. Aunque usamos CXF, este puede incluir utilidades base. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web-services</artifactId>
+		</dependency>
+
+		<!-- 
+		  Dependencia de Apache CXF para tiempo de ejecución.
+		  GroupId: org.apache.cxf -> Identifica al proyecto Apache CXF.
+		  ArtifactId: cxf-spring-boot-starter-jaxws -> Proporciona las librerías para consumir servicios SOAP (JAX-WS) en una aplicación Spring Boot.
+		-->
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-spring-boot-starter-jaxws</artifactId>
+			<version>4.0.4</version>
+		</dependency>
+
+		<!-- Herramientas de desarrollo: Habilita reinicios automáticos y otras funcionalidades para un desarrollo más rápido. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<!-- Lombok: Reduce el código repetitivo (boilerplate) como getters, setters, constructores, etc. mediante anotaciones. -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<!-- Starter para pruebas: Incluye JUnit, Mockito y otras librerías para probar aplicaciones Spring Boot. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<!--
+			  Plugin de Apache CXF para la generación de código.
+			  GroupId: org.apache.cxf -> Identifica al proyecto Apache CXF.
+			  ArtifactId: cxf-codegen-plugin -> Es la herramienta que se ejecuta durante el build de Maven para convertir un WSDL en clases Java (cliente SOAP).
+			  Se engancha a la fase 'generate-sources' para que el código esté disponible antes de la compilación.
+			-->
+			<plugin>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-codegen-plugin</artifactId>
+				<version>4.0.4</version> <!-- O la versión más reciente compatible -->
+				<executions>
+					<execution>
+						<id>generate-sources</id>
+						<phase>generate-sources</phase>
+						<configuration>
+							<!-- Directorio de salida: Especifica dónde se guardarán las clases Java generadas. -->
+							<sourceRoot>${project.basedir}/src/main/java</sourceRoot>
+							<!-- Directorio raíz del WSDL: Base para resolver rutas relativas dentro de los archivos WSDL (ej. importaciones de XSD). -->
+							<wsdlRoot>${project.basedir}/src/main/resources/wsdl</wsdlRoot>
+							<wsdlOptions>
+								<wsdlOption>
+									<!-- Ruta al archivo WSDL principal que se va a procesar. -->
+									<wsdl>${project.basedir}/src/main/resources/wsdl/consulta-ruc.wsdl</wsdl>
+									<!-- Ruta al archivo de catálogo: Se usa para mapear recursos (como XSDs) a ubicaciones locales. -->
+									<catalog>${project.basedir}/src/main/resources/META-INF/ax-ws-catalog.xml</catalog>
+									<!-- Argumentos adicionales: '-p' define el paquete Java para las clases generadas. -->
+									<extraargs>
+										<extraarg>-p</extraarg>
+										<extraarg>com.py.sifenpy.client.ruc</extraarg>
+									</extraargs>
+								</wsdlOption>
+							</wsdlOptions>
+						</configuration>
+						<goals>
+							<goal>wsdl2java</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
