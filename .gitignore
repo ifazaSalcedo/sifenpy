@@ -31,3 +31,7 @@ build/
 .vscode/<
 
 com/py/sifenpy/**/*.java
+
+### Archivos de Secretos y Certificados ###
+# Ignorar el directorio que contiene el archivo de certificado .p12
+/src/main/resources/keystorefile/

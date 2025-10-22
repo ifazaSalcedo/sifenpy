@@ -1,100 +1,92 @@
-# Cliente SOAP para SIFEN (Paraguay) con Spring Boot y Apache CXF
+# SifenPy - Cliente SOAP para SIFEN en Spring Boot
 
-Este es un proyecto de demostración que muestra cómo consumir un servicio web SOAP, específicamente el servicio de **Consulta de RUC** del Sistema Integrado de Facturación Electrónica Nacional (SIFEN) de Paraguay, utilizando Spring Boot y el framework Apache CXF.
+Este proyecto es una aplicación de ejemplo construida con Spring Boot que demuestra cómo consumir un servicio web SOAP protegido con autenticación mutua (mTLS). Específicamente, se conecta al endpoint de **Consulta de RUC** del Sistema Integrado de Facturación Electrónica Nacional (SIFEN) de Paraguay.
 
-## Funcionalidades Principales
+## Requisitos
 
-1.  **Generación de Cliente SOAP desde WSDL**: El proyecto está configurado para generar automáticamente las clases Java necesarias para consumir el servicio SOAP a partir de un archivo WSDL local.
-2.  **Manejo de Dependencias de Esquemas (XSD)**: Utiliza un catálogo JAX-WS (`jax-ws-catalog.xml`) para resolver las ubicaciones de los archivos XSD importados por el WSDL, permitiendo una estructura de proyecto organizada y un proceso de build más robusto.
-3.  **Integración con Spring Boot**: Muestra la configuración necesaria para integrar un cliente Apache CXF en una aplicación Spring Boot.
+- **Java 17** o superior.
+- **Apache Maven** 3.6 o superior.
+- Un **Certificado Digital** en formato `.p12` válido para el ambiente de pruebas de SIFEN.
 
-## Tecnologías Utilizadas
+## Configuración
 
-- **Java 17**
-- **Spring Boot 3.3.1**
-- **Apache CXF 4.0.4**: Framework para la creación y consumo de servicios web (SOAP y REST).
-- **Maven**: Herramienta para la gestión de dependencias y construcción del proyecto.
-- **Lombok**: Para reducir el código repetitivo (boilerplate).
+Antes de ejecutar la aplicación, es necesario configurar el certificado digital y su contraseña.
 
----
+### 1. Certificado Digital (.p12)
 
-## ¿Cómo funciona la generación del cliente?
+1.  Crea la siguiente estructura de directorios dentro del proyecto:
+    ```
+    src/main/resources/keystorefile/
+    ```
+2.  Copia tu archivo de certificado `.p12` dentro de esa carpeta.
 
-La magia ocurre gracias al plugin `cxf-codegen-plugin` configurado en el `pom.xml`.
+3.  Abre el archivo `src/main/resources/application.properties` y asegúrate de que la propiedad `sifenpy.soap.keystore.path` apunte a tu archivo.
 
-```xml
-<plugin>
-    <groupId>org.apache.cxf</groupId>
-    <artifactId>cxf-codegen-plugin</artifactId>
-    <version>4.0.4</version>
-    <executions>
-        <execution>
-            <id>generate-sources</id>
-            <phase>generate-sources</phase>
-            <configuration>
-                <!-- 1. Las clases se generan en src/main/java -->
-                <sourceRoot>${project.basedir}/src/main/java</sourceRoot>
-                
-                <!-- 2. Se procesa este archivo WSDL -->
-                <wsdl>${project.basedir}/src/main/resources/wsdl/consulta-ruc.wsdl</wsdl>
-                
-                <!-- 3. Se usa un catálogo para encontrar los XSD en otras carpetas -->
-                <catalog>${project.basedir}/src/main/resources/META-INF/ax-ws-catalog.xml</catalog>
-                
-                <!-- 4. Las clases generadas se colocan en este paquete -->
-                <extraargs>
-                    <extraarg>-p</extraarg>
-                    <extraarg>com.py.sifenpy.client.ruc</extraarg>
-                </extraargs>
-            </configuration>
-            <goals>
-                <goal>wsdl2java</goal>
-            </goals>
-        </execution>
-    </executions>
-</plugin>
-```
+    ```properties
+    # Ruta al archivo del certificado. 'classpath:' indica que está en 'src/main/resources'.
+    sifenpy.soap.keystore.path=classpath:keystorefile/TU_CERTIFICADO.p12
+    ```
 
-Este plugin se ejecuta durante la fase `generate-sources` de Maven, antes de la compilación, asegurando que las clases del cliente estén disponibles para el resto de la aplicación.
+> **Nota de Seguridad**: El archivo `.gitignore` está configurado para ignorar la carpeta `keystorefile/`, por lo que tu certificado no será subido al repositorio de Git.
 
-### Estructura de Archivos Relevante
+### 2. Contraseña del Certificado (Variable de Entorno)
 
-```
-/
-├── src/main/java/com/py/sifenpy/client/ruc/  -> (Directorio para las clases generadas)
-│
-├── src/main/resources/
-│   ├── wsdl/
-│   │   └── consulta-ruc.wsdl                 -> Contrato del servicio web.
-│   ├── xsd/
-│   │   └── consulta-ruc.wsdl.xsd1.xsd        -> Esquema de datos importado por el WSDL.
-│   └── META-INF/
-│       └── ax-ws-catalog.xml                 -> Mapea el XSD a su ubicación local.
-│
-└── pom.xml                                     -> Configuración del proyecto y del plugin.
-```
+Para evitar exponer la contraseña del certificado en el código fuente, la aplicación está configurada para leerla desde una variable de entorno llamada `SIFEN_KEYSTORE_PASSWORD`.
 
----
+Debes exportar esta variable en la terminal que usarás para ejecutar la aplicación.
 
-## Cómo Construir y Ejecutar el Proyecto
-
-### Prerrequisitos
-- JDK 17 o superior.
-- Apache Maven.
-
-### 1. Construir el Proyecto
-
-Abre una terminal en la raíz del proyecto y ejecuta el siguiente comando. Este comando generará las clases del cliente SOAP y compilará el proyecto.
-
+**En Linux o macOS:**
 ```bash
-mvn clean install
+export SIFEN_KEYSTORE_PASSWORD='tu_contraseña_secreta'
 ```
 
-### 2. Ejecutar la Aplicación
+**En Windows (Command Prompt):**
+```cmd
+set SIFEN_KEYSTORE_PASSWORD=tu_contraseña_secreta
+```
 
-Una vez construido, puedes ejecutar la aplicación Spring Boot con:
+**En Windows (PowerShell):**
+```powershell
+$env:SIFEN_KEYSTORE_PASSWORD="tu_contraseña_secreta"
+```
+
+## Cómo Ejecutar la Aplicación
+
+Una vez configurado el certificado y la variable de entorno, puedes iniciar la aplicación usando Maven:
 
 ```bash
 mvn spring-boot:run
 ```
 
+La aplicación se iniciará en el puerto `8080` por defecto.
+
+## Endpoints de la API
+
+### Consultar RUC
+
+Realiza una consulta de los datos de un contribuyente a partir de su RUC.
+
+- **URL**: `/api/sifen/consulta-ruc/{ruc}`
+- **Método**: `GET`
+- **Parámetros de URL**:
+  - `{ruc}`: El número de RUC a consultar (sin el dígito verificador).
+
+#### Ejemplo de uso con cURL:
+
+```bash
+curl -X GET http://localhost:8080/api/sifen/consulta-ruc/3489773
+```
+
+#### Respuesta Exitosa (Ejemplo):
+```json
+{
+    "dCodRes": "0201",
+    "dMsgRes": "RUC encontrado",
+    "xContRUC": {
+        "dRUCCons": "3489773",
+        "dRazSoc": "NOMBRE DEL CONTRIBUYENTE",
+        "dEst": "ACTIVO",
+        "dTipCont": "PERSONA FISICA"
+    }
+}
+```
